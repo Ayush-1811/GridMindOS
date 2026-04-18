@@ -1,0 +1,19 @@
+# GridMind OS — Python dependencies
+# Install with: pip install -r requirements.txt
+
+# ── Dashboard / UI ──
+streamlit>=1.35.0
+
+# ── Data & plotting ──
+pandas>=2.0.0
+plotly>=5.20.0
+
+# ── GPU access (optional — falls back to mock mode if not available) ──
+# Requires NVIDIA drivers installed on the host system.
+pynvml>=11.5.0
+
+# ── Background scheduling (imported by auto_scheduler via threading) ──
+# No extra dep needed — uses stdlib threading + time
+
+# ── Standard library deps (no install needed) ──
+# sqlite3, threading, datetime, csv, io, math, random, logging

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Real Time Price View</title>
+	<meta http-equiv="refresh" content="300">
+	<meta content="width=device-width, initial-scale=1" name="viewport" />
+	<!-- Load Chart.js from CDN 
+	<script src="js/jquery.min.js"></script>-->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+	<script src="chart.js/Chart.min.js"></script>
+	<style>
+	    .chartcan{
+	            width:97vw !important;
+	            height:58vh !important;
+	        }
+	   .main-heading {
+    font-family: sans-serif;
+    color: #19629c;
+    font-weight: 700;
+    font-size: 50px;
+    margin-top: 10px;
+    text-shadow: 2px 5px gainsboro;
+    max-width: calc(100% - 248px);
+    text-align: center;
+}
+	   .logo{
+	       position: absolute;right: 0;top: 0;
+	   }
+	   .price-box {
+    width: max-content;
+    box-shadow: 0 0 20px 0 gainsboro;
+    display: flex;
+    padding: 21px;
+    font-size: 60px;
+    border: 1px solid;
+    background: #ffff003b;
+    justify-content: center;
+    margin-left: 15%;
+}
+	   
+	         @media screen and (min-width: 768px) {
+	             .pl-lg-224{
+	                 padding-left: 224px;
+	             }
+	         }
+	         @media screen and (max-width: 768px) {
+	        .chartcan{
+	            width:97vw !important;
+	            height:27vh !important;
+	        }
+	        .main-heading {
+                font-size: 26px;
+                max-width: 100%;
+                    line-height: 36px;
+            }
+	        .header{
+	            text-align:center;
+	        }
+	        .logo{
+	        position: static;
+            width: 150px;
+	      }
+	      .d-lg-none{
+	       display:block;
+	   }
+	   .price-box {
+    width: 97%;
+    padding: 18px 12px;
+    font-size: 30px;
+    margin-left: 0;
+}
+	    }
+	   
+	</style>
+<script>var __uzdbm_1 = "df0e4da7-1e6c-404a-9189-588043a2f59e";var __uzdbm_2 = "MGUwYTVmZjYtY2Uwei00NGZiLTkyZWEtZjcwZDFkMDFhZTdkJDExNS4yNDQuMzYuMg==";var __uzdbm_3 = "";var __uzdbm_4 = "false";var __uzdbm_5 = "";var __uzdbm_6 = "";var __uzdbm_7 = "";</script> <script>   (function (w, d, e, u, c, g, a, b) {     w["SSJSConnectorObj"] = w["SSJSConnectorObj"] || {       ss_cid: c,       domain_info: "auto",     };     w[g] = function (i, j) {       w["SSJSConnectorObj"][i] = j;     };     a = d.createElement(e);     a.async = true;     if (       navigator.userAgent.indexOf('MSIE') !== -1 ||       navigator.appVersion.indexOf('Trident/') > -1     ) {       u = u.replace("/advanced/", "/advanced/ie/");     }     a.src = u;     b = d.getElementsByTagName(e)[0];     b.parentNode.insertBefore(a, b);   })(     window, document, "script", "https://www.iexrtmprice.com/18f5227b-e27b-445a-a53f-f845fbe69b40/stormcaster.js", "ce11", "ssConf"   );   ssConf("c1", "https://www.iexrtmprice.com");   ssConf("c3", "c99a4269-161c-4242-a3f0-28d44fa6ce24");   ssConf("au", "iexrtmprice.com");   ssConf("cu", "validate.perfdrive.com, ssc"); </script></head>
+<body>
+<input type="hidden" id="regin_input" value=""/>
+<div class="header">
+    <img class="logo" src="/logo.webp"/>
+ <h1 class="main-heading">Current Electricity Price for Region <span style="text-transform: uppercase;"></span> on
+ <br><span class="">18-Apr-2026</h1>
+ <!--<p style="text-align: center;font-size: 40px;margin: 0;font-family: sans-serif;font-weight: 700;">18-Apr-2026</p>-->
+  <div class="price-box">
+      <span class=""><strong style="color: #d32d25;">Rs. <span id="lastPrice">2.7</span>/kWh </strong></span> <span class="" style="padding-left: 12px;"><strong style="color: #d32d25;"><small>at <span id="lastblockTime"> 9:45 to 10:00</span></small></strong></span>
+ </div>
+</div>
+	<div style="    padding-top: 35px;">
+		<canvas class="chartcan" id="myChart" >
+	</div>
+	 <script>
+	 //Round function
+	 function roundNumber(num, scale) {
+		  if(!("" + num).includes("e")) {
+			return +(Math.round(num + "e+" + scale)  + "e-" + scale);
+		  } else {
+			var arr = ("" + num).split("e");
+			var sig = ""
+			if(+arr[1] + scale > 0) {
+			  sig = "+";
+			}
+			return +(Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) + "e-" + scale);
+		  }
+		}
+        $(document).ready(function () {
+            showGraph();
+        });
+
+
+        function showGraph()
+        {
+            {
+				var regn = $('#regin_input').val();
+                $.post("data.php", { region: regn},
+                function (data)
+                {
+                    
+                     var DAM_Area_Price = [];
+                     var RTM_Area_Price = [];
+                    var Block_no = [];
+					var lastblockTime = '';
+					var lastPrice = '';
+
+                    for (var i in data) {
+						if(data[i].segment=='DAM'){
+                          DAM_Area_Price.push(roundNumber((data[i].area_price)/1000, 2));
+						  Block_no.push(data[i].block_no_code);
+						}else if(data[i].segment=='RTM'){
+                        RTM_Area_Price.push(roundNumber((data[i].area_price)/1000, 2));
+						lastblockTime = data[i].block_no_code;
+						lastPrice = roundNumber((data[i].area_price)/1000, 2);
+						}
+                        
+                    }
+					$('#lastPrice').html(lastPrice);
+					$('#lastblockTime').html(lastblockTime);
+					//console.log(lastblockTime);
+					//console.log(lastPrice);
+					//Chart Js Start
+					   var data = {
+						labels: Block_no,
+						datasets: [
+							{
+								label: "DAM-ACP",
+								fill: "transparent",
+								borderColor: "#2196f3",
+								pointColor: "#2196f3",
+								pointStrokeColor: "#0a5fa2",
+								pointHighlightFill: "#0a5fa2",
+								pointHighlightStroke: "rgba(220,220,220,1)",
+								data: DAM_Area_Price
+							},
+							{
+								label: "RTM-ACP",
+								fill: "transparent",
+								borderColor: "#a48a22",
+								pointColor: "#a48a22",
+								pointStrokeColor: "#67550c",
+								pointHighlightFill: "#67550c",
+								pointHighlightStroke: "rgba(151,187,205,1)",
+								data: RTM_Area_Price
+							}
+						]
+					};
+					
+					
+					var options = {
+							"elements": {
+							  "rectangle": {
+								"borderWidth": 1
+							  }
+							},
+							"layout": {
+							  "padding": 0
+							},
+							"legend": {
+							  "display": true,
+							  "position": 'bottom',
+							  "labels": {
+								"boxWidth": 16
+							  }
+							},
+							"maintainAspectRatio": false,
+							"responsive": true,
+							"scales": {
+							  "xAxes": [
+								{
+								  "gridLines": {
+									"display": false,
+									"color": "rgba(0, 0, 0, 0)"
+								  },
+								  "scaleLabel": {
+									"display": true,
+									"labelString": "Time Period"
+								  },
+								  "stacked": false,
+								  "ticks": {
+									"autoSkip": true,
+									"autoSkipPadding":2,
+									"beginAtZero": false,
+									"maxRotation": 90,
+									fontSize: 8,
+								  },
+								  "time": {
+									"tooltipFormat": "[Q]Q - YYYY",
+									"unit": "quarter"
+								  },
+								  //"type": "time"
+								}
+							  ],
+							  "yAxes": [
+								{
+								  "gridLines": {
+									"display": false,
+									"color": "rgba(0, 0, 0, 0)"
+								  },
+								  "scaleLabel": {
+									"display": true,
+									"labelString": "(Rs./kWh)"
+								  },
+											"id": "left",
+								  "stacked": false,
+								  "ticks": {
+									"beginAtZero": true
+								  }
+								}
+							  ]
+							},
+							"title": {
+							  "display": false
+							},
+							"tooltips": {
+							  "intersect": false,
+							  "mode": "index",
+							  "position": "nearest",
+							  "callbacks": {}
+							}
+						  };
+					   
+
+					//var ctx = document.getElementById("myChart").getContext("2d");
+					var type = "line";
+    
+					var myChart = new Chart(document.getElementById("myChart").getContext('2d'), {options, data, type});
+					//var myLineChart = new Chart(ctx).Line(data, options);
+					
+					//Chart Js End
+
+                    
+                });
+            }
+        }
+        </script>
+</body>
+</html>
